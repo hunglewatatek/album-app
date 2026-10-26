@@ -1,8 +1,31 @@
+import { useEffect, useState } from 'react'
+import { supabase } from './supabaseClient'
+
+const BUCKET = 'images'
+
+function photoUrl(path) {
+  return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
+}
+
 export default function App() {
+  const [photos, setPhotos] = useState([])
+
+  useEffect(() => {
+    supabase
+      .from('photos')
+      .select('*')
+      .then(({ data, error }) => {
+        if (error) console.error(error)
+        else setPhotos(data)
+      })
+  }, [])
+
   return (
     <div>
       <h1>Album của tôi</h1>
-      <img src="https://rxtqjusicjrbhjnvgpyn.supabase.co/storage/v1/object/public/images/cm29-2-696x522.jpeg" alt="ảnh 1" width="300" />
+      {photos.map((p) => (
+        <img key={p.id} src={photoUrl(p.storage_path)} alt={p.caption} width="300" />
+      ))}
     </div>
   )
 }
